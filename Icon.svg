@@ -1,0 +1,6 @@
+<svg class="brand-cube-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M50 10 L88 28 L50 46 L12 28 Z" fill="#FF2A6D"/>
+    <path d="M12 34 L46 51 L46 90 L12 71 Z" fill="#E0235E"/>
+    <path d="M54 51 L88 34 L88 71 L54 90 Z" fill="#A81041"/>
+    <path d="M63 48 L78 40 L78 68 L63 76 Z" fill="#0D0F14"/>
+</svg>

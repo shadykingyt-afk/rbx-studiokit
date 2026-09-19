@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <link rel="icon" type="image/svg+xml" href="Icon.svg">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RBX StudioKit - Roblox UI & RichText Tools</title>
+
+    <!-- Google Fonts & FontAwesome Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* Design Variables */
+        :root {
+            --bg-color: #0d0f14;
+            --nav-bg: #141720;
+            --card-bg: #1a1d27;
+            --input-bg: #0f1118;
+            --accent-pink: #ff2a6d;
+            --accent-pink-hover: #e0235e;
+            --accent-purple: #8b5cf6;
+            --accent-cyan: #06b6d4;
+            --accent-green: #10b981;
+            --text-color: #f3f4f6;
+            --text-muted: #9ca3af;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --border-focus: #ff2a6d;
+            --selected-glow: #f59e0b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(255, 42, 109, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 85% 85%, rgba(139, 92, 246, 0.05) 0%, transparent 40%);
+        }
+
+        /* Navbar */
+        .navbar {
+            background-color: var(--nav-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0 2rem;
+            height: 65px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .brand-logo {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: #ffffff;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        /* SVG Logo Styling */
+        .brand-cube-svg {
+            width: 32px;
+            height: 32px;
+            filter: drop-shadow(0 0 8px rgba(255, 42, 109, 0.4));
+            transition: transform 0.2s ease;
+        }
+
+        .brand-logo:hover .brand-cube-svg {
+            transform: scale(1.08) rotate(-3deg);
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 0.8rem;
+            align-items: center;
+        }
+
+        .nav-item {
+            position: relative;
+        }
+
+        .nav-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 0.5rem 0.9rem;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: #ffffff;
+            background-color: rgba(255, 255, 255, 0.06);
+        }
+
+        .nav-link.active {
+            color: var(--accent-pink);
+            background-color: rgba(255, 42, 109, 0.1);
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: calc(100% + 5px);
+            right: 0;
+            background-color: var(--nav-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            min-width: 200px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            display: none;
+            flex-direction: column;
+            padding: 0.5rem;
+            z-index: 100;
+        }
+
+        .dropdown-menu a {
+            color: var(--text-color);
+            padding: 0.6rem 1rem;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            border-radius: 6px;
+            transition: background 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dropdown-menu a:hover {
+            background-color: var(--accent-pink);
+            color: #fff;
+        }
+
+        .nav-item:hover .dropdown-menu {
+            display: flex;
+        }
+
+        /* Container Layout */
+        .container {
+            max-width: 1100px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+            width: 100%;
+            flex: 1;
+        }
+
+        .page {
+            display: none;
+            animation: fadeIn 0.25s ease-in-out;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .page-header {
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .page-header h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .page-header i {
+            color: var(--accent-pink);
+            font-size: 1.5rem;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 20px 24px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-color);
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .badge {
+            background: rgba(255, 42, 109, 0.12);
+            color: var(--accent-pink);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border: 1px solid rgba(255, 42, 109, 0.25);
+        }
+
+        .badge-green {
+            background: rgba(16, 185, 129, 0.12);
+            color: #34d399;
+            border-color: rgba(16, 185, 129, 0.25);
+        }
+
+        /* Form Controls */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        label {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input[type="text"], input[type="number"], select {
+            width: 100%;
+            height: 42px;
+            padding: 0 12px;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        input[type="text"]:focus, select:focus, input[type="number"]:focus {
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgba(255, 42, 109, 0.15);
+        }
+
+        /* Buttons */
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            height: 40px;
+            padding: 0 16px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn.active {
+            background: var(--accent-pink);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 4px 12px rgba(255, 42, 109, 0.3);
+        }
+
+        .btn-green {
+            background: var(--accent-green);
+            color: white;
+            border: none;
+        }
+
+        .btn-green:hover {
+            background: #059669;
+        }
+
+        .btn-sm {
+            height: 34px;
+            padding: 0 12px;
+            font-size: 0.8rem;
+        }
+
+        /* Layout Grids */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .grid-main-preview {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 20px;
+        }
+
+        /* Asset Preview Box */
+        .preview-card-box {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            min-height: 200px;
+        }
+
+        .preview-img-holder {
+            width: 140px;
+            height: 140px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 2px dashed var(--border-color);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .preview-img-holder img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* Fallback Placeholder */
+        .preview-fallback-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            text-align: center;
+        }
+
+        /* Loader Spinner */
+        .loader-spinner {
+            width: 28px;
+            height: 28px;
+            border: 3px solid rgba(255, 42, 109, 0.2);
+            border-top: 3px solid var(--accent-pink);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Token Interactive Canvas */
+        .canvas-box {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            padding: 18px;
+            border-radius: 10px;
+            min-height: 90px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            direction: ltr;
+        }
+
+        .token {
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            user-select: none;
+            font-size: 1.1rem;
+            transition: all 0.15s ease;
+            background: rgba(255, 255, 255, 0.03);
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .token:hover {
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .token.selected {
+            border-color: var(--selected-glow) !important;
+            background: rgba(245, 158, 11, 0.15) !important;
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+        }
+
+        /* Color Picker Input */
+        .color-picker-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--input-bg);
+            padding: 4px 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            height: 42px;
+        }
+
+        input[type="color"] {
+            -webkit-appearance: none;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+            cursor: pointer;
+            background: none;
+        }
+
+        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        input[type="color"]::-webkit-color-swatch { border: none; border-radius: 6px; }
+
+        /* Output Code & Preview */
+        textarea {
+            width: 100%;
+            height: 90px;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            color: #34d399;
+            padding: 12px;
+            border-radius: 8px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            resize: vertical;
+            direction: ltr;
+        }
+
+        .sim-box {
+            background: #11131a;
+            border-radius: 10px;
+            padding: 24px;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            direction: ltr;
+        }
+
+        .output-action-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .output-action-group input {
+            font-family: 'Fira Code', monospace;
+            color: #60a5fa;
+        }
+
+        /* Credits Cards */
+        .credits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+        }
+
+        .credit-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            color: #fff;
+        }
+
+        .credit-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent-pink);
+        }
+
+        .credit-icon {
+            width: 44px;
+            height: 44px;
+            background-color: rgba(255, 42, 109, 0.12);
+            color: var(--accent-pink);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+
+        .credit-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .credit-title {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .credit-value {
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .discord-btn {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, #5865F2, #404EED);
+            border: none;
+            justify-content: center;
+            padding: 18px;
+        }
+
+        @media (max-width: 900px) {
+            .grid-3 { grid-template-columns: 1fr; }
+            .grid-2 { grid-template-columns: 1fr; }
+            .grid-main-preview { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 600px) {
+            .navbar { padding: 0 1rem; }
+            .nav-links { gap: 0.4rem; }
+            .nav-link { font-size: 0.8rem; padding: 0.4rem 0.6rem; }
+            .output-action-group { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <nav class="navbar">
+        <a href="#" class="brand-logo" onclick="showPage('imglabel')">
+            <svg class="brand-cube-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M50 10 L88 28 L50 46 L12 28 Z" fill="#FF2A6D"/>
+                <path d="M12 34 L46 51 L46 90 L12 71 Z" fill="#E0235E"/>
+                <path d="M54 51 L88 34 L88 71 L54 90 Z" fill="#A81041"/>
+                <path d="M63 48 L78 40 L78 68 L63 76 Z" fill="#0D0F14"/>
+            </svg>
+            RBX StudioKit
+        </a>
+
+        <ul class="nav-links">
+            <li class="nav-item">
+                <a class="nav-link active" id="btn-imglabel" onclick="showPage('imglabel')">
+                    ImageLabel
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" id="btn-textlabel" onclick="showPage('textlabel')">
+                    TextLabel
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link">
+                    Tools <i class="fa-solid fa-chevron-down" style="font-size: 0.7rem;"></i>
+                </a>
+                <div class="dropdown-menu">
+                    <a href="#" onclick="showPage('imglabel')"><i class="fa-solid fa-image"></i> Image Asset Generator</a>
+                    <a href="#" onclick="showPage('textlabel')"><i class="fa-solid fa-font"></i> RichText Studio</a>
+                    <a href="#" onclick="showPage('credits')"><i class="fa-solid fa-users"></i> Credits & Links</a>
+                </div>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" id="btn-credits" onclick="showPage('credits')">
+                    Credits
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container">
+
+        <!-- PAGE 1: ImageLabel Generator -->
+        <section id="page-imglabel" class="page active">
+            <div class="page-header">
+                <i class="fa-solid fa-image"></i>
+                <h1>ImageLabel</h1>
+            </div>
+
+            <div class="card">
+                <div class="card-title">
+                    <span>Configuration Parameters</span>
+                    <span class="badge badge-green">Roblox URI Engine</span>
+                </div>
+
+                <div class="grid-3">
+                    <div class="form-group">
+                        <label>Asset / Target ID</label>
+                        <input type="text" id="rbxIdInput" value="8248266681" placeholder="e.g. 8248266681" oninput="updateRbxThumb()" dir="ltr">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Thumbnail Type</label>
+                        <select id="rbxTypeSelect" onchange="updateRbxThumb()">
+                            <option value="AvatarHeadShot" selected>👤 HeadShot</option>
+                            <option value="Avatar">🧍 Avatar Full Body</option>
+                            <option value="AvatarBust">👔 Avatar Bust</option>
+                            <option value="Asset">📦 Asset / Decal / Gear</option>
+                            <option value="Badge">🏅 Badge Icon</option>
+                            <option value="GamePass">🎫 GamePass Icon</option>
+                            <option value="GroupIcon">👥 Group Icon</option>
+                            <option value="Outfit">👕 Saved Outfit</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Resolution Size</label>
+                        <select id="rbxSizeSelect" onchange="updateRbxThumb()">
+                            <option value="w=48&h=48">48 x 48 px</option>
+                            <option value="w=60&h=60">60 x 60 px</option>
+                            <option value="w=150&h=150" selected>150 x 150 px</option>
+                            <option value="w=352&h=352">352 x 352 px</option>
+                            <option value="w=420&h=420">420 x 420 px</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Preview & Output Section -->
+            <div class="grid-main-preview">
+                <div class="preview-card-box">
+                    <label>Live Image Preview</label>
+                    <div class="preview-img-holder">
+                        <div id="previewLoader" class="loader-spinner" style="display: none;"></div>
+                        <img id="assetPreviewImg" src="" alt="Asset Preview" style="display: none;">
+                        <div id="previewFallback" class="preview-fallback-content">
+                            <svg class="brand-cube-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:38px; height:38px;">
+                                <path d="M50 10 L88 28 L50 46 L12 28 Z" fill="#FF2A6D"/>
+                                <path d="M12 34 L46 51 L46 90 L12 71 Z" fill="#E0235E"/>
+                                <path d="M54 51 L88 34 L88 71 L54 90 Z" fill="#A81041"/>
+                                <path d="M63 48 L78 40 L78 68 L63 76 Z" fill="#0D0F14"/>
+                            </svg>
+                            <span>rbxthumb Protocol (doesn't work)</span>
+                        </div>
+                    </div>
+                    <span style="font-size: 0.75rem; color: var(--text-muted); text-align: center;">Used directly inside Roblox Studio properties (It doesn't work)</span>
+                </div>
+
+                <div class="card" style="margin-bottom: 0;">
+                    <div class="card-title">Generated Outputs</div>
+
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label>Direct Asset URI (ImageLabel.Image)</label>
+                        <div class="output-action-group">
+                            <input type="text" id="directRbxUrl" readonly dir="ltr">
+                            <button class="btn btn-green" onclick="copyToClipboard('directRbxUrl')"><i class="fa-solid fa-copy"></i> Copy</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>RichText Tag Format (TextLabel.Text)</label>
+                        <div class="output-action-group">
+                            <input type="text" id="richTextImgTag" readonly dir="ltr">
+                            <button class="btn" onclick="copyToClipboard('richTextImgTag')"><i class="fa-solid fa-copy"></i> Copy Tag</button>
+                            <button class="btn active" onclick="insertImgToTextLabel()"><i class="fa-solid fa-plus"></i> Append to Text Studio</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- PAGE 2: TextLabel RichText Studio -->
+        <section id="page-textlabel" class="page">
+            <div class="page-header">
+                <i class="fa-solid fa-font"></i>
+                <h1>TextLabel RichText Studio</h1>
+            </div>
+
+            <div class="card">
+                <div class="card-title">
+                    <span>Text & Selection Canvas</span>
+                    <div class="btn-group">
+                        <button class="btn btn-sm active" id="modeWord" onclick="setMode('word')">Word Mode</button>
+                        <button class="btn btn-sm" id="modeChar" onclick="setMode('char')">Char Mode</button>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label>Source Text</label>
+                    <input type="text" id="textInput" value="PLAYER PROFILE [STATUS: ONLINE]" placeholder="Type your text..." oninput="parseText()" dir="ltr">
+                </div>
+
+                <div class="form-group">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <label>Interactive Selection Canvas</label>
+                        <span id="selectionCounter" style="font-size: 0.78rem; color: var(--accent-pink); font-weight: 600;">0 items selected</span>
+                    </div>
+                    <div class="canvas-box" id="interactiveBox"></div>
+                </div>
+
+                <div style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button class="btn btn-sm" onclick="selectAll()">Select All</button>
+                    <button class="btn btn-sm" onclick="deselectAll()">Deselect All</button>
+                    <button class="btn btn-sm" onclick="invertSelection()">Invert Selection</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Formatting Options</div>
+
+                <div class="grid-3" style="margin-bottom: 16px;">
+                    <div class="form-group">
+                        <label>Font Color</label>
+                        <div class="color-picker-wrapper">
+                            <input type="color" id="textColor" value="#ffffff" onchange="applyToSelected()">
+                            <span id="textColorHex" style="font-family: monospace; font-size: 0.85rem;">#ffffff</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Font Face</label>
+                        <select id="fontSelect" onchange="applyToSelected()">
+                            <option value="Montserrat">Montserrat</option>
+                            <option value="FredokaOne">Fredoka One</option>
+                            <option value="Arcade">Arcade</option>
+                            <option value="LuckiestGuy">Luckiest Guy</option>
+                            <option value="SourceSans">Source Sans</option>
+                            <option value="Garamond">Garamond</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Font Size</label>
+                        <input type="number" id="fontSizeInput" min="8" max="100" placeholder="Auto" onchange="applyToSelected()">
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label>Text Styles</label>
+                        <div class="btn-group">
+                            <button class="btn btn-sm" id="btnBold" onclick="toggleStyle('bold')"><i class="fa-solid fa-bold"></i></button>
+                            <button class="btn btn-sm" id="btnItalic" onclick="toggleStyle('italic')"><i class="fa-solid fa-italic"></i></button>
+                            <button class="btn btn-sm" id="btnUnderline" onclick="toggleStyle('underline')"><i class="fa-solid fa-underline"></i></button>
+                            <button class="btn btn-sm" id="btnStrike" onclick="toggleStyle('strikethrough')"><i class="fa-solid fa-strikethrough"></i></button>
+                            <button class="btn btn-sm" id="btnStroke" onclick="toggleStyle('stroke')">Stroke</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Stroke Color & Size</label>
+                        <div style="display: flex; gap: 8px;">
+                            <div class="color-picker-wrapper" style="width: 80px;">
+                                <input type="color" id="strokeColor" value="#000000" onchange="applyToSelected()">
+                            </div>
+                            <input type="number" id="strokeThickness" min="0.1" max="5" step="0.1" value="0.5" placeholder="Thickness" onchange="applyToSelected()">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Roblox Render Preview</div>
+                <div class="sim-box">
+                    <div id="simText"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">
+                    <span>RichText Markup Code</span>
+                    <span id="charCount" style="font-size: 0.78rem; color: var(--text-muted);">0 chars</span>
+                </div>
+                <textarea id="outputCode" readonly></textarea>
+                <button class="btn btn-green" onclick="copyToClipboard('outputCode')" style="margin-top: 12px; width: 100%; justify-content: center;">
+                    <i class="fa-solid fa-copy"></i> Copy RichText Code
+                </button>
+            </div>
+        </section>
+
+
+        <!-- PAGE 3: Credits & Links -->
+        <section id="page-credits" class="page">
+            <div class="page-header">
+                <i class="fa-solid fa-heart"></i>
+                <h1>Credits & Community</h1>
+            </div>
+
+            <div class="credits-grid">
+                <div class="credit-card">
+                    <div class="credit-icon"><i class="fa-solid fa-user"></i></div>
+                    <div class="credit-info">
+                        <span class="credit-title">Roblox User</span>
+                        <span class="credit-value">Sh4dizz</span>
+                    </div>
+                </div>
+
+                <div class="credit-card">
+                    <div class="credit-icon" style="color: #ff0000; background: rgba(255,0,0,0.12);"><i class="fa-brands fa-youtube"></i></div>
+                    <div class="credit-info">
+                        <span class="credit-title">YouTube</span>
+                        <span class="credit-value">Mrcansl</span>
+                    </div>
+                </div>
+
+                <div class="credit-card">
+                    <div class="credit-icon" style="color: #ff0000; background: rgba(255,0,0,0.12);"><i class="fa-brands fa-youtube"></i></div>
+                    <div class="credit-info">
+                        <span class="credit-title">YouTube Secondary</span>
+                        <span class="credit-value">Sh4dizz</span>
+                    </div>
+                </div>
+
+                <div class="credit-card">
+                    <div class="credit-icon"><i class="fa-brands fa-tiktok"></i></div>
+                    <div class="credit-info">
+                        <span class="credit-title">TikTok</span>
+                        <span class="credit-value">xi77.z</span>
+                    </div>
+                </div>
+
+                <div class="credit-card">
+                    <div class="credit-icon" style="color: #5865F2; background: rgba(88,101,242,0.12);"><i class="fa-brands fa-discord"></i></div>
+                    <div class="credit-info">
+                        <span class="credit-title">Discord Owner</span>
+                        <span class="credit-value">o.qkm</span>
+                    </div>
+                </div>
+
+                <a href="https://discord.gg/8ayenMYCge" target="_blank" class="credit-card discord-btn">
+                    <div class="credit-icon" style="background: rgba(255,255,255,0.2); color:#fff;"><i class="fa-solid fa-users"></i></div>
+                    <div class="credit-info">
+                        <span class="credit-title" style="color: rgba(255,255,255,0.8);">Official Discord Server</span>
+                        <span class="credit-value">Join Community <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 0.75rem; margin-left:4px;"></i></span>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- JavaScript Logic -->
+    <script>
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+
+            const targetPage = document.getElementById('page-' + pageId);
+            if (targetPage) targetPage.classList.add('active');
+
+            const targetBtn = document.getElementById('btn-' + pageId);
+            if (targetBtn) targetBtn.classList.add('active');
+        }
+
+        let mode = 'word';
+        let tokens = [];
+
+        window.onload = function() {
+            updateRbxThumb();
+            parseText();
+        };
+
+        // Fetch Live Roblox Preview via Proxy Server to Bypass CORS Block
+        function updateRbxThumb() {
+            const id = document.getElementById('rbxIdInput').value.trim() || '8248266681';
+            const type = document.getElementById('rbxTypeSelect').value;
+            const sizeParam = document.getElementById('rbxSizeSelect').value;
+
+            // Extract dimensions
+            const sizeMatch = sizeParam.match(/w=(\d+)&h=(\d+)/);
+            const w = sizeMatch ? sizeMatch[1] : '420';
+            const h = sizeMatch ? sizeMatch[2] : '420';
+
+            // Direct Studio rbxthumb Protocol
+            const rbxUrl = `rbxthumb://type=${type}&id=${id}&${sizeParam}`;
+            document.getElementById('directRbxUrl').value = rbxUrl;
+
+            // RichText Tag
+            const imgTag = `<img src="${rbxUrl}" width="${w}" height="${h}"/>`;
+            document.getElementById('richTextImgTag').value = imgTag;
+
+            const previewImg = document.getElementById('assetPreviewImg');
+            const previewFallback = document.getElementById('previewFallback');
+            const previewLoader = document.getElementById('previewLoader');
+
+            // Map Roblox types for the thumbnail proxy
+            let proxyType = 'asset';
+            switch(type) {
+                case 'AvatarHeadShot':
+                    proxyType = 'avatar-headshot';
+                    break;
+                case 'Avatar':
+                    proxyType = 'avatar';
+                    break;
+                case 'AvatarBust':
+                    proxyType = 'avatar-bust';
+                    break;
+                case 'Badge':
+                    proxyType = 'badge';
+                    break;
+                case 'GamePass':
+                    proxyType = 'gamepass';
+                    break;
+                case 'GroupIcon':
+                    proxyType = 'group-icon';
+                    break;
+                case 'Outfit':
+                    proxyType = 'outfit';
+                    break;
+                default:
+                    proxyType = 'asset';
+            }
+
+            // Using proxy URL to fetch image directly in browser without CORS errors
+            const directImgUrl = `https://rbxthumb.deno.dev/?id=${id}&type=${proxyType}&w=${w}&h=${h}`;
+
+            previewImg.style.display = 'none';
+            previewFallback.style.display = 'none';
+            previewLoader.style.display = 'block';
+
+            previewImg.src = directImgUrl;
+
+            previewImg.onload = function() {
+                previewLoader.style.display = 'none';
+                previewImg.style.display = 'block';
+            };
+
+            previewImg.onerror = function() {
+                previewLoader.style.display = 'none';
+                previewFallback.style.display = 'flex';
+            };
+        }
+
+        function insertImgToTextLabel() {
+            const imgTag = document.getElementById('richTextImgTag').value;
+            tokens.push({
+                type: 'image',
+                tagContent: imgTag,
+                selected: false
+            });
+            renderTokens();
+            generateRichText();
+            showPage('textlabel');
+        }
+
+        function setMode(newMode) {
+            mode = newMode;
+            document.getElementById('modeWord').classList.toggle('active', mode === 'word');
+            document.getElementById('modeChar').classList.toggle('active', mode === 'char');
+            parseText();
+        }
+
+        function parseText() {
+            const rawText = document.getElementById('textInput').value;
+            tokens = [];
+
+            if (mode === 'word') {
+                const words = rawText.split(/(\s+)/);
+                words.forEach(w => tokens.push(createToken('text', w)));
+            } else {
+                const chars = rawText.split('');
+                chars.forEach(c => tokens.push(createToken('text', c)));
+            }
+            renderTokens();
+            generateRichText();
+        }
+
+        function createToken(type, content) {
+            return {
+                type: type,
+                text: content,
+                color: '#ffffff',
+                font: 'Montserrat',
+                size: '',
+                bold: false,
+                italic: false,
+                underline: false,
+                strikethrough: false,
+                stroke: false,
+                strokeColor: '#000000',
+                strokeThickness: 0.5,
+                selected: false
+            };
+        }
+
+        function renderTokens() {
+            const box = document.getElementById('interactiveBox');
+            box.innerHTML = '';
+
+            tokens.forEach(t => {
+                if (t.type === 'image') {
+                    const span = document.createElement('span');
+                    span.className = `token ${t.selected ? 'selected' : ''}`;
+                    span.innerHTML = `<span style="color:#06b6d4; font-size:0.8rem; font-weight:bold;"><i class="fa-solid fa-image"></i> [Image Tag]</span>`;
+                    span.onclick = (e) => toggleTokenSelect(t, e);
+                    box.appendChild(span);
+                    return;
+                }
+
+                if (!t.text) return;
+                const span = document.createElement('span');
+                span.className = `token ${t.selected ? 'selected' : ''}`;
+                span.innerText = t.text === ' ' ? '␣' : t.text;
+                span.style.color = t.color;
+                span.style.fontFamily = t.font;
+                span.style.fontWeight = t.bold ? 'bold' : 'normal';
+                span.style.fontStyle = t.italic ? 'italic' : 'normal';
+                if (t.underline) span.style.textDecoration = 'underline';
+                if (t.strikethrough) span.style.textDecoration += ' line-through';
+                if (t.stroke) span.style.webkitTextStroke = `${t.strokeThickness}px ${t.strokeColor}`;
+
+                span.onclick = (e) => toggleTokenSelect(t, e);
+                box.appendChild(span);
+            });
+
+            const selectedCount = tokens.filter(t => t.selected).length;
+            document.getElementById('selectionCounter').innerText = `${selectedCount} items selected`;
+        }
+
+        function toggleTokenSelect(t, e) {
+            if (!e.shiftKey) {
+                tokens.forEach(tok => tok.selected = false);
+            }
+            t.selected = !t.selected;
+            renderTokens();
+            updateToolbar();
+        }
+
+        function selectAll() { tokens.forEach(t => t.selected = true); renderTokens(); updateToolbar(); }
+        function deselectAll() { tokens.forEach(t => t.selected = false); renderTokens(); updateToolbar(); }
+        function invertSelection() { tokens.forEach(t => t.selected = !t.selected); renderTokens(); updateToolbar(); }
+
+        function updateToolbar() {
+            const selected = tokens.filter(t => t.selected && t.type === 'text');
+            if (selected.length > 0) {
+                const last = selected[selected.length - 1];
+                document.getElementById('textColor').value = last.color;
+                document.getElementById('textColorHex').innerText = last.color;
+                document.getElementById('fontSelect').value = last.font;
+                document.getElementById('fontSizeInput').value = last.size || '';
+                document.getElementById('strokeColor').value = last.strokeColor;
+                document.getElementById('strokeThickness').value = last.strokeThickness;
+
+                document.getElementById('btnBold').classList.toggle('active', last.bold);
+                document.getElementById('btnItalic').classList.toggle('active', last.italic);
+                document.getElementById('btnUnderline').classList.toggle('active', last.underline);
+                document.getElementById('btnStrike').classList.toggle('active', last.strikethrough);
+                document.getElementById('btnStroke').classList.toggle('active', last.stroke);
+            }
+        }
+
+        function applyToSelected() {
+            const color = document.getElementById('textColor').value;
+            const font = document.getElementById('fontSelect').value;
+            const size = document.getElementById('fontSizeInput').value;
+            const strokeColor = document.getElementById('strokeColor').value;
+            const strokeThickness = parseFloat(document.getElementById('strokeThickness').value) || 0.5;
+
+            document.getElementById('textColorHex').innerText = color;
+
+            tokens.forEach(t => {
+                if (t.selected && t.type === 'text') {
+                    t.color = color;
+                    t.font = font;
+                    t.size = size;
+                    t.strokeColor = strokeColor;
+                    t.strokeThickness = strokeThickness;
+                }
+            });
+            renderTokens();
+            generateRichText();
+        }
+
+        function toggleStyle(style) {
+            const selected = tokens.filter(t => t.selected && t.type === 'text');
+            if (selected.length === 0) return;
+            const state = !selected[0][style];
+            selected.forEach(t => t[style] = state);
+            renderTokens();
+            updateToolbar();
+            generateRichText();
+        }
+
+        function generateRichText() {
+            let code = '';
+            let simHtml = '';
+
+            tokens.forEach(t => {
+                if (t.type === 'image') {
+                    code += t.tagContent;
+                    simHtml += `<span style="background:#06b6d4; color:#000; padding:2px 6px; border-radius:4px; font-weight:bold; font-size:11px; margin:0 2px;">[IMG]</span>`;
+                    return;
+                }
+
+                if (!t.text) return;
+                let formatted = t.text;
+
+                if (t.bold) formatted = `<b>${formatted}</b>`;
+                if (t.italic) formatted = `<i>${formatted}</i>`;
+                if (t.underline) formatted = `<u>${formatted}</u>`;
+                if (t.strikethrough) formatted = `<s>${formatted}</s>`;
+                if (t.stroke) formatted = `<stroke color="${t.strokeColor}" thickness="${t.strokeThickness}">${formatted}</stroke>`;
+
+                let fontTags = [];
+                if (t.color) fontTags.push(`color="${t.color}"`);
+                if (t.font) fontTags.push(`face="${t.font}"`);
+                if (t.size) fontTags.push(`size="${t.size}"`);
+
+                if (fontTags.length > 0) {
+                    formatted = `<font ${fontTags.join(' ')}>${formatted}</font>`;
+                }
+
+                code += formatted;
+
+                let simSpan = `<span style="color:${t.color}; font-family:${t.font}; font-weight:${t.bold?'bold':'normal'}; font-style:${t.italic?'italic':'normal'}; text-decoration:${(t.underline?'underline ':'') + (t.strikethrough?'line-through':'')}; ${t.stroke?`-webkit-text-stroke:${t.strokeThickness}px${t.strokeColor}`:''}; font-size:${t.size?t.size+'px':'inherit'};">${t.text}</span>`;
+                simHtml += simSpan;
+            });
+
+            document.getElementById('outputCode').value = code;
+            document.getElementById('simText').innerHTML = simHtml;
+            document.getElementById('charCount').innerText = `${code.length} chars`;
+        }
+
+        function copyToClipboard(elementId) {
+            const el = document.getElementById(elementId);
+            el.select();
+            document.execCommand('copy');
+            alert('Copied to clipboard successfully!');
+        }
+    </script>
+</body>
+</html>
